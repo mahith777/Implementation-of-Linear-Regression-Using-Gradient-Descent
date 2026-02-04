@@ -22,56 +22,66 @@ Developed by:Mahith M
 RegisterNumber: 212225220061
 
 
-import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
+import numpy as np
+import matplotlib.pyplot as plt
 
-def linear_regression(X, y, iters=1000, learning_rate=0.01):
-    X = np.hstack((np.ones((X.shape[0], 1)), X)) 
-    theta = np.zeros((X.shape[1], 1))
+data=pd.read_csv("50_Startups.csv")
+x=data["R&D Spend"].values
+y=data["Profit"].values
+
+x_mean=np.mean(x)
+x_std=np.std(x)
+x=(x-x_mean)/x_std
+
+
+w=0.0
+b=0.0
+alpha=0.01
+epochs=100
+n=len(x)
+
+losses=[]
+
+for i in range(epochs):
+    y_hat=w*x+b
+    loss=np.mean((y_hat-y)**2)
+    losses.append(loss)
     
-    for _ in range(iters):
-        predictions = X.dot(theta)
-        errors = predictions - y.reshape(-1, 1)
-        gradient = (1 / X.shape[0]) * X.T.dot(errors)
-        theta -= learning_rate * gradient
+    dw=(2/n)*np.sum((y_hat-y)*x)
+    db=(2/n)*np.sum(y_hat-y)
     
-    return theta
+    w-=alpha*dw
+    b-=alpha*db
 
-data = pd.read_csv('50_Startups.csv', header=0)
+plt.figure(figsize=(12,5))
 
-X = data.iloc[:, :-1].values
-y = data.iloc[:, -1].values
+plt.subplot(1,2,1)
+plt.plot(losses)
+plt.xlabel("Iterations")
+plt.ylabel("Loss(MSE)")
+plt.title("Loss vs Iterations")
 
-ct = ColumnTransformer(transformers=[
-    ('encoder', OneHotEncoder(), [3])  
-], remainder='passthrough')
+plt.subplot(1,2,2)
+plt.scatter(x,y)
+x_sorted=np.argsort(x)
+plt.plot(x[x_sorted],(w*x+b)[x_sorted],color="red")
+plt.xlabel("R&D Spend (scaled)")
+plt.ylabel("Profit")
+plt.title("Linear Regression Fit")
 
-X = ct.fit_transform(X)
+plt.tight_layout()
+plt.show()
 
-y = y.astype(float)
-
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-theta = linear_regression(X_scaled, y, iters=1000, learning_rate=0.01)
-
-new_data = np.array([165349.2, 136897.8, 471784.1, 'New York']).reshape(1, -1)  
-new_data_scaled = scaler.transform(ct.transform(new_data))
-
-new_prediction = np.dot(np.append(1, new_data_scaled), theta)
-
-print(f"Predicted value: {new_prediction[0]}")
-data.head()
+print(f"Final weight (w): {w}")
+print(f"Final bias (b): {b}")
  
 */
 ```
 
 ## Output:
 
-<img width="497" height="205" alt="image" src="https://github.com/user-attachments/assets/c4a48d93-e7ae-4f9e-b50c-6f2e0042353b" />
+<img width="1062" height="449" alt="image" src="https://github.com/user-attachments/assets/7806ab91-18bf-4505-944b-68e5c6f173ac" />
 
 
 ## Result:
